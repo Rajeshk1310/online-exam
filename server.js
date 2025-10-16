@@ -4,11 +4,13 @@ const path = require("path");
 const cors = require("cors");
 
 const app = express();
+
+// Middleware
 app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
 
-// ✅ Use MongoDB Atlas connection from environment variable (Render)
+// ✅ MongoDB connection (use Atlas URL from environment variable)
 const mongoURI = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/onlineexam";
 
 mongoose
@@ -42,7 +44,7 @@ const Submission = mongoose.model("Submission", submissionSchema, "submissions")
 app.get("/api/questions", async (req, res) => {
   try {
     const questions = await Question.find();
-    if (questions.length === 0) {
+    if (!questions.length) {
       return res.status(404).json({ message: "No questions found in database" });
     }
     res.json(questions);
@@ -65,11 +67,11 @@ app.post("/api/submit", async (req, res) => {
   }
 });
 
-// 🌍 Serve index.html for all routes (for frontend)
+// 🌍 Serve index.html for all routes
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// 🚀 Start server on Render-assigned port OR 3000 locally
+// 🚀 Start server on Render-assigned port or 3000 locally
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
