@@ -60,7 +60,7 @@ label {
 label:hover { background: #a0c8ff; }
 input[type=radio] { margin-right: 10px; }
 
-/* Updated button styles */
+/* Small button styles */
 button { 
   background: #4a90e2; 
   color: #fff; 
@@ -71,9 +71,15 @@ button {
   cursor: pointer; 
   transition: 0.3s; 
   width: auto;        /* shrink to content */
-  margin-top: 10px;   /* reduced margin */
+  margin-top: 10px;   
 }
 button:hover { background: #357abd; }
+
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
 
 .progress-bar { 
   width: 100%; 
@@ -91,3 +97,19 @@ button:hover { background: #357abd; }
   border-radius: 10px; 
   transition: width 0.3s ease-in-out; 
 }
+
+/* Sidebar styling */
+.sidebar {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.question-nav button {
+  margin: 3px;
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+.answered { background: #4a90e2 !important; color: #fff; }
+.unanswered { background: #ccc !important; color: #000; }
