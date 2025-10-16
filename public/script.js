@@ -1,7 +1,7 @@
 let questions = [];
 let currentIndex = 0;
 const answers = {};
-const totalTime = 600; // 10 minutes
+const totalTime = 3600; // 60 minutes
 let timeLeft = totalTime;
 let timerInterval;
 
@@ -54,7 +54,7 @@ function startTimer() {
     progressCircle.style.stroke = ratio>0.5?"green":ratio>0.2?"orange":"red";
     progressCircle.style.strokeDashoffset = circumference*(1-ratio);
 
-    if(timeLeft<=0){
+    if(timeLeft <= 0){
       clearInterval(timerInterval);
       alert("Time's up! Submitting...");
       submitExam();
@@ -124,7 +124,7 @@ function createQuestionNav() {
     btn.className = "unanswered";
     btn.addEventListener("click", ()=>{
       const selected = document.querySelector("input[type=radio]:checked");
-      if(selected) answers[selected.name]=selected.value;
+      if(selected) answers[selected.name] = selected.value;
       currentIndex = i;
       showQuestion();
     });
