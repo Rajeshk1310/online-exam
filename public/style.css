@@ -125,15 +125,22 @@ button:hover { background:#357abd; }
   gap:10px;
 }
 
+/* Sidebar buttons */
 .question-nav button {
-  display:block;
-  width:100%;
-  margin-bottom:5px;
-  font-size:13px;
-  padding:6px;
+  display: block;
+  width: 100%;
+  margin-bottom: 5px;
+  font-size: 13px;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
 }
-.answered { background:#4a90e2 !important; color:#fff; }
-.unanswered { background:#ccc !important; color:#000; }
+.answered { background: #4caf50 !important; color: #fff; }
+.unanswered { background: #ccc !important; color: #000; }
+.current { border: 2px solid #ff9800; }
+.question-nav button:hover { opacity: 0.8; }
 
 @media (max-width: 768px) {
   .container { flex-direction: column; padding:20px; }
