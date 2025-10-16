@@ -5,7 +5,6 @@ const totalTime = 600; // 10 minutes
 let timeLeft = totalTime;
 let timerInterval;
 
-// DOM elements
 const startBtn = document.getElementById("startBtn");
 const nameSection = document.getElementById("nameSection");
 const questionSection = document.getElementById("questionSection");
@@ -16,7 +15,6 @@ const timerText = document.getElementById("timerText");
 const questionNav = document.getElementById("questionNav");
 const totalQuestionsText = document.getElementById("totalQuestions");
 
-// Start Exam
 startBtn.addEventListener("click", async () => {
   const studentName = document.getElementById("studentName").value.trim();
   if (!studentName) { alert("Please enter your name"); return; }
@@ -31,23 +29,16 @@ startBtn.addEventListener("click", async () => {
   startTimer();
 });
 
-// Load questions from server
 async function loadQuestions() {
-  try {
-    const res = await fetch("/api/questions");
-    questions = await res.json();
-    if (questions.length === 0) {
-      document.getElementById("questionContainer").innerHTML = "<p>No questions available.</p>";
-      nextBtn.style.display = "none";
-      prevBtn.style.display = "none";
-    }
-  } catch (err) {
-    document.getElementById("questionContainer").innerHTML = "<p>Failed to fetch questions.</p>";
-    console.error(err);
+  const res = await fetch("/api/questions");
+  questions = await res.json();
+  if (questions.length === 0) {
+    document.getElementById("questionContainer").innerHTML = "<p>No questions available.</p>";
+    nextBtn.style.display = "none";
+    prevBtn.style.display = "none";
   }
 }
 
-// Timer
 function startTimer() {
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
@@ -63,17 +54,16 @@ function startTimer() {
     progressCircle.style.stroke = ratio>0.5?"green":ratio>0.2?"orange":"red";
     progressCircle.style.strokeDashoffset = circumference*(1-ratio);
 
-    if(timeLeft <= 0){
+    if(timeLeft<=0){
       clearInterval(timerInterval);
       alert("Time's up! Submitting...");
       submitExam();
     }
-  }, 1000);
+  },1000);
 }
 
-// Show current question
 function showQuestion() {
-  if (questions.length === 0) return;
+  if(questions.length === 0) return;
 
   const container = document.getElementById("questionContainer");
   container.innerHTML = "";
@@ -107,75 +97,26 @@ function showQuestion() {
   updateQuestionNav();
 }
 
-// Next / Submit button
 nextBtn.addEventListener("click", () => {
   const selected = document.querySelector("input[type=radio]:checked");
-  if (!selected) { alert("Please select an option"); return; }
+  if(!selected){ alert("Please select an option"); return; }
   answers[selected.name] = selected.value;
 
-  if (currentIndex < questions.length - 1) {
+  if(currentIndex < questions.length-1){
     currentIndex++;
     showQuestion();
-  } else {
-    submitExam();
-  }
+  } else submitExam();
 });
 
-// Previous button
 prevBtn.addEventListener("click", () => {
-  if (currentIndex === 0) return;
+  if(currentIndex === 0) return;
   const selected = document.querySelector("input[type=radio]:checked");
-  if (selected) answers[selected.name] = selected.value;
+  if(selected) answers[selected.name] = selected.value;
   currentIndex--;
   showQuestion();
 });
 
-// Create sidebar question navigation
 function createQuestionNav() {
   questionNav.innerHTML = "";
   questions.forEach((q, i) => {
-    const btn = document.createElement("button");
-    btn.textContent = i+1;
-    btn.className = "unanswered";
-    btn.addEventListener("click", () => {
-      const selected = document.querySelector("input[type=radio]:checked");
-      if (selected) answers[selected.name] = selected.value;
-      currentIndex = i;
-      showQuestion();
-    });
-    questionNav.appendChild(btn);
-  });
-}
-
-// Update sidebar buttons based on answered/unanswered
-function updateQuestionNav() {
-  const buttons = questionNav.querySelectorAll("button");
-  buttons.forEach((btn, i) => {
-    btn.className = answers[questions[i]._id] ? "answered" : "unanswered";
-  });
-}
-
-// Submit exam
-async function submitExam() {
-  clearInterval(timerInterval);
-  const studentName = document.getElementById("studentName").value;
-  try {
-    await fetch("/api/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ studentName, answers })
-    });
-    confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
-
-    // Show thank-you message
-    const container = document.querySelector(".main");
-    container.innerHTML = `
-      <h1>Thank You!</h1>
-      <p style="text-align:center; font-size:18px; margin-top:20px;">
-        Your result will be published later on.
-      </p>
-    `;
-  } catch(err) {
-    alert("Submission failed: " + err.message);
-  }
-}
+    const btn =
