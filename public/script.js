@@ -134,4 +134,48 @@ prevBtn.addEventListener("click", () => {
 function createQuestionNav() {
   questionNav.innerHTML = "";
   questions.forEach((q, i) => {
-    co
+    const btn = document.createElement("button");
+    btn.textContent = i+1;
+    btn.className = "unanswered";
+    btn.addEventListener("click", () => {
+      const selected = document.querySelector("input[type=radio]:checked");
+      if (selected) answers[selected.name] = selected.value;
+      currentIndex = i;
+      showQuestion();
+    });
+    questionNav.appendChild(btn);
+  });
+}
+
+// Update sidebar buttons based on answered/unanswered
+function updateQuestionNav() {
+  const buttons = questionNav.querySelectorAll("button");
+  buttons.forEach((btn, i) => {
+    btn.className = answers[questions[i]._id] ? "answered" : "unanswered";
+  });
+}
+
+// Submit exam
+async function submitExam() {
+  clearInterval(timerInterval);
+  const studentName = document.getElementById("studentName").value;
+  try {
+    await fetch("/api/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ studentName, answers })
+    });
+    confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+
+    // Show thank-you message
+    const container = document.querySelector(".main");
+    container.innerHTML = `
+      <h1>Thank You!</h1>
+      <p style="text-align:center; font-size:18px; margin-top:20px;">
+        Your result will be published later on.
+      </p>
+    `;
+  } catch(err) {
+    alert("Submission failed: " + err.message);
+  }
+}
