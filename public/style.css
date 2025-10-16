@@ -17,9 +17,27 @@ body {
   padding: 30px;
 }
 
-h1 { text-align: center; color: #4a90e2; margin-bottom: 20px; }
-#timer { text-align: center; font-size: 18px; margin-bottom: 15px; color: #ff4b5c; }
-input[type=text] { width:100%; padding:12px; border-radius:10px; border:1px solid #ccc; font-size:16px; margin-bottom:20px; }
+h1 { 
+  text-align: center; 
+  color: #4a90e2; 
+  margin-bottom: 20px; 
+}
+
+#timer { 
+  text-align: center; 
+  font-size: 18px; 
+  margin-bottom: 15px; 
+  color: #ff4b5c; 
+}
+
+input[type=text] { 
+  width: 100%; 
+  padding: 12px; 
+  border-radius: 10px; 
+  border: 1px solid #ccc; 
+  font-size: 16px; 
+  margin-bottom: 20px; 
+}
 
 .question-card {
   background: linear-gradient(135deg, #f6f8ff, #e0f0ff);
@@ -29,12 +47,47 @@ input[type=text] { width:100%; padding:12px; border-radius:10px; border:1px soli
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
-label { display:block; margin:10px 0; padding:12px; border-radius:10px; background:#d0e2ff; cursor:pointer; transition:0.2s; font-size:16px; }
-label:hover { background:#a0c8ff; }
-input[type=radio] { margin-right:10px; }
+label { 
+  display: block; 
+  margin: 10px 0; 
+  padding: 12px; 
+  border-radius: 10px; 
+  background: #d0e2ff; 
+  cursor: pointer; 
+  transition: 0.2s; 
+  font-size: 16px; 
+}
+label:hover { background: #a0c8ff; }
+input[type=radio] { margin-right: 10px; }
 
-button { background:#4a90e2; color:#fff; border:none; padding:12px 25px; font-size:16px; border-radius:12px; cursor:pointer; transition:0.3s; margin-top:20px; }
-button:hover { background:#357abd; }
+/* Updated button styles */
+button { 
+  background: #4a90e2; 
+  color: #fff; 
+  border: none; 
+  padding: 6px 15px;  /* smaller padding */
+  font-size: 14px;    /* smaller text */
+  border-radius: 8px; /* slightly smaller corners */
+  cursor: pointer; 
+  transition: 0.3s; 
+  width: auto;        /* shrink to content */
+  margin-top: 10px;   /* reduced margin */
+}
+button:hover { background: #357abd; }
 
-.progress-bar { width:100%; height:15px; background:#e0e0e0; border-radius:10px; margin-bottom:20px; overflow:hidden; }
-.progress { height:100%; width:0%; background:#4a90e2; border-radius:10px; transition: width 0.3s ease-in-out; }
+.progress-bar { 
+  width: 100%; 
+  height: 15px; 
+  background: #e0e0e0; 
+  border-radius: 10px; 
+  margin-bottom: 20px; 
+  overflow: hidden; 
+}
+
+.progress { 
+  height: 100%; 
+  width: 0%; 
+  background: #4a90e2; 
+  border-radius: 10px; 
+  transition: width 0.3s ease-in-out; 
+}
