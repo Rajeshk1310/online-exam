@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Online Exam</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #74ebd5, #acb6e5);
+      margin: 0; padding: 0;
+      display: flex; justify-content: center; align-items: center; height: 100vh;
+    }
+
+    .container {
+      width: 900px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      padding: 30px;
+      display: flex;
+    }
+
+    .main {
+      flex: 3;
+      margin-right: 20px;
+    }
+
+    .sidebar {
+      flex: 1;
+      background: #f4f4f4;
+      border-radius: 15px;
+      padding: 15px;
+      height: fit-content;
+    }
+
+    h1 { text-align: center; color: #4a90e2; margin-bottom: 10px; }
+    #totalQuestions { text-align:center; font-weight:bold; margin-bottom:15px; }
+
+    #timer { width: 120px; height: 120px; margin: 0 auto 20px auto; position: relative; }
+    #timer svg circle { fill: none; stroke-width: 10; transform: rotate(-90deg); transform-origin: 50% 50%; }
+    #timer .bg { stroke: #e6e6e6; }
+    #timer .progress { stroke: green; stroke-linecap: round; transition: stroke 0.5s linear; }
+    #timerText { position:absolute; width:120px; height:120px; top:0; left:0; display:flex; justify-content:center; align-items:center; font-size:22px; font-weight:bold; color:#333; }
+
+    input[type=text] { width:100%; padding:12px; border-radius:10px; border:1px solid #ccc; font-size:16px; margin-bottom:20px; }
+
+    #questionContainer { min-height:180px; margin-bottom:20px; }
+    .question-card { background: linear-gradient(135deg, #f6f8ff, #e0f0ff); border-radius: 15px; padding:20px; box-shadow:0 5px 15px rgba(0,0,0,0.1); }
+    label { display:block; margin:10px 0; padding:12px; border-radius:10px; background:#d0e2ff; cursor:pointer; font-size:16px; }
+    label:hover { background:#a0c8ff; }
+    input[type=radio] { margin-right:10px; }
+
+    button { background:#4a90e2; color:#fff; border:none; padding:12px 25px; font-size:16px; border-radius:12px; cursor:pointer; transition:0.3s; margin-top:10px; width:100%; }
+    button:hover { background:#357abd; }
+
+    .progress-bar { width:100%; height:15px; background:#e0e0e0; border-radius:10px; margin-bottom:20px; }
+    .progress { height:100%; width:0%; background:#4a90e2; border-radius:10px; transition: width 0.3s; }
+
+    .nav-buttons { display:flex; justify-content:space-between; margin-top:10px; }
+
+    .sidebar h3 { text-align:center; margin-bottom:10px; }
+    .question-nav button { margin-bottom:5px; font-size:14px; }
+    .answered { background:#4a90e2 !important; color:#fff; }
+    .unanswered { background:#ccc !important; color:#000; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="main">
+      <h1>Online Exam</h1>
+      <p id="totalQuestions"></p>
+
+      <div id="timer">
+        <svg width="120" height="120">
+          <circle class="bg" cx="60" cy="60" r="50"></circle>
+          <circle class="progress" cx="60" cy="60" r="50"></circle>
+        </svg>
+        <div id="timerText">10:00</div>
+      </div>
+
+      <form id="examForm">
+        <div id="nameSection">
+          <input type="text" id="studentName" placeholder="Enter your name" required>
+          <button type="button" id="startBtn">Start Exam</button>
+        </div>
+
+        <div id="questionSection" style="display:none;">
+          <div class="progress-bar"><div class="progress" id="progress"></div></div>
+          <div id="questionContainer"></div>
+          <div class="nav-buttons">
+            <button type="button" id="prevBtn">Previous</button>
+            <button type="button" id="nextBtn">Next</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="sidebar">
+      <h3>Questions</h3>
+      <div class="question-nav" id="questionNav"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <script>
+    let questions = [];
+    let currentIndex = 0;
+    const answers = {};
+    const totalTime = 600;
+    let timeLeft = totalTime;
+    let timerInterval;
+
+    const startBtn = document.getElementById("startBtn");
+    const nameSection = document.getElementById("nameSection");
+    const questionSection = document.getElementById("questionSection");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const progressCircle = document.querySelector("#timer .progress");
+    const timerText = document.getElementById("timerText");
+    const questionNav = document.getElementById("questionNav");
+    const totalQuestionsText = document.getElementById("totalQuestions");
+
+    startBtn.addEventListener("click", async () => {
+      const studentName = document.getElementById("studentName").value.trim();
+      if (!studentName) { alert("Please enter your name"); return; }
+
+      nameSection.style.display = "none";
+      questionSection.style.display = "block";
+
+      await loadQuestions();
+      totalQuestionsText.textContent = `Total Questions: ${questions.length}`;
+      createQuestionNav();
+      showQuestion();
+      startTimer();
+    });
+
+    async function loadQuestions() {
+      const res = await fetch("/api/questions");
+      questions = await res.json();
+      if (questions.length === 0) {
+        document.getElementById("questionContainer").innerHTML = "<p>No questions available.</p>";
+        nextBtn.style.display = "none";
+        prevBtn.style.display = "none";
+      }
+    }
+
+    function startTimer() {
+      const radius = 50;
+      const circumference = 2 * Math.PI * radius;
+      progressCircle.style.strokeDasharray = circumference;
+      progressCircle.style.strokeDashoffset = 0;
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        timerText.textContent = `${minutes}:${seconds < 10 ? "0"+seconds : seconds}`;
+        const ratio = timeLeft / totalTime;
+        progressCircle.style.stroke = ratio>0.5?"green":ratio>0.2?"orange":"red";
+        progressCircle.style.strokeDashoffset = circumference*(1-ratio);
+
+        if(timeLeft<=0){
+          clearInterval(timerInterval);
+          alert("Time's up! Submitting...");
+          submitExam();
+        }
+      },1000);
+    }
+
+    function showQuestion() {
+      if(questions.length === 0) return;
+
+      const container = document.getElementById("questionContainer");
+      container.innerHTML = "";
+
+      const q = questions[currentIndex];
+      const div = document.createElement("div");
+      div.className = "question-card";
+
+      const prevAnswer = answers[q._id] || "";
+      div.innerHTML = `<p>Q${currentIndex+1}: ${q.question}</p>`;
+      q.options.forEach(opt => {
+        const label = document.createElement("label");
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = q._id;
+        input.value = opt;
+        if(prevAnswer === opt) input.checked = true;
+        label.appendChild(input);
+        label.append(` ${opt}`);
+        div.appendChild(label);
+      });
+
+      container.appendChild(div);
+
+      prevBtn.style.display = currentIndex === 0 ? "none" : "inline-block";
+      nextBtn.textContent = currentIndex === questions.length - 1 ? "Submit" : "Next";
+      nextBtn.style.display = "inline-block";
+
+      document.getElementById("progress").style.width = ((currentIndex)/questions.length)*100+"%";
+
+      updateQuestionNav();
+    }
+
+    nextBtn.addEventListener("click", () => {
+      const selected = document.querySelector("input[type=radio]:checked");
+      if(!selected){ alert("Please select an option"); return; }
+      answers[selected.name] = selected.value;
+
+      if(currentIndex < questions.length-1){
+        currentIndex++;
+        showQuestion();
+      } else submitExam();
+    });
+
+    prevBtn.addEventListener("click", () => {
+      if(currentIndex === 0) return;
+      const selected = document.querySelector("input[type=radio]:checked");
+      if(selected) answers[selected.name] = selected.value;
+      currentIndex--;
+      showQuestion();
+    });
+
+    function createQuestionNav() {
+      questionNav.innerHTML = "";
+      questions.forEach((q, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = i+1;
+        btn.className = "unanswered";
+        btn.addEventListener("click", ()=>{
+          const selected = document.querySelector("input[type=radio]:checked");
+          if(selected) answers[selected.name]=selected.value;
+          currentIndex = i;
+          showQuestion();
+        });
+        questionNav.appendChild(btn);
+      });
+    }
+
+    function updateQuestionNav() {
+      const buttons = questionNav.querySelectorAll("button");
+      buttons.forEach((btn, i) => {
+        btn.className = answers[questions[i]._id] ? "answered" : "unanswered";
+      });
+    }
+
+    async function submitExam() {
+      clearInterval(timerInterval);
+      const studentName = document.getElementById("studentName").value;
+      try{
+        await fetch("/api/submit",{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({studentName,answers})
+        });
+        confetti({particleCount:200, spread:100, origin:{y:0.6}});
+
+        // Show thank-you message instead of reloading
+        const container = document.querySelector(".main");
+        container.innerHTML = `
+          <h1>Thank You!</h1>
+          <p style="text-align:center; font-size:18px; margin-top:20px;">
+            Your result will be published later on.
+          </p>
+        `;
+      }catch(err){ 
+        alert("Submission failed: "+err.message); 
+      }
+    }
+  </script>
+</body>
+</html>
