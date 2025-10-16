@@ -55,5 +55,7 @@ app.post("/api/submit", async (req, res) => {
 });
 
 // Start server using Render-assigned port
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;  // ✅ use Render-assigned port if available
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+
