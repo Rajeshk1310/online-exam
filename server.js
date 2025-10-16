@@ -1,49 +1,58 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
+const cors = require("cors");
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
 
-// Connect to MongoDB
-mongoose.connect("mongodb://127.0.0.1:27017/onlineexam", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log("MongoDB connected"))
-.catch(err => console.log(err));
+// ✅ Use MongoDB Atlas connection from environment variable (Render)
+const mongoURI = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/onlineexam";
 
-// Question schema
+mongoose
+  .connect(mongoURI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connection failed:", err));
+
+// 🧩 Question Schema
 const questionSchema = new mongoose.Schema({
   question: String,
   options: [String]
 });
 
-// Model (collection name: questions)
+// Model (collection: questions)
 const Question = mongoose.model("Question", questionSchema, "questions");
 
-// Submission schema
+// 🧩 Submission Schema
 const submissionSchema = new mongoose.Schema({
   studentName: String,
   answers: mongoose.Schema.Types.Mixed,
   submittedAt: { type: Date, default: Date.now }
 });
 
-// Model (collection name: submissions)
+// Model (collection: submissions)
 const Submission = mongoose.model("Submission", submissionSchema, "submissions");
 
-// API to fetch questions
+// 🧠 API: Fetch questions
 app.get("/api/questions", async (req, res) => {
   try {
     const questions = await Question.find();
+    if (questions.length === 0) {
+      return res.status(404).json({ message: "No questions found in database" });
+    }
     res.json(questions);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Failed to fetch questions" });
   }
 });
 
-// API to submit answers
+// 📝 API: Submit answers
 app.post("/api/submit", async (req, res) => {
   try {
     const { studentName, answers } = req.body;
@@ -56,5 +65,11 @@ app.post("/api/submit", async (req, res) => {
   }
 });
 
-// Start server
-app.listen(3000, () => console.log("Server running on http://localhost:3000"));
+// 🌍 Serve index.html for all routes (for frontend)
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// 🚀 Start server on Render-assigned port OR 3000 locally
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
