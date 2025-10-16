@@ -9,7 +9,7 @@ app.use(express.json());
 // Serve frontend from public folder
 app.use(express.static(path.join(__dirname, "public")));
 
-// MongoDB connection
+// MongoDB connection (Atlas)
 const mongoURI = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/onlineexam";
 
 mongoose.connect(mongoURI)
@@ -31,7 +31,7 @@ const submissionSchema = new mongoose.Schema({
 });
 const Submission = mongoose.model("Submission", submissionSchema, "submissions");
 
-// API to get questions
+// API to fetch questions
 app.get("/api/questions", async (req, res) => {
   try {
     const questions = await Question.find();
@@ -55,6 +55,6 @@ app.post("/api/submit", async (req, res) => {
   }
 });
 
-// Dynamic port for Render
+// Listen on Render-assigned port (works after suspend/resume)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
